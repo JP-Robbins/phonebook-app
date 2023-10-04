@@ -3,6 +3,7 @@ const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const mongoose = require('mongoose')
 
 app.use(morgan(':method :status :total-time[2]'))
 app.use(express.json())
@@ -32,6 +33,19 @@ let persons = [
       }
     ]
 
+const url =
+`mongodb+srv://jprobbins:${password}@cluster0.kbixiln.mongodb.net/phonebookApp?retryWrites=true&w=majority`
+
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const personSchema = new mongoose.Schema({
+    name: String,
+    number: Number,
+})
+
+const Person = mongoose.model('Person', personSchema)
+
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
 })
@@ -41,7 +55,9 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
- response.json(persons)
+ Person.find({}).then(person => {
+    response.json(person)
+ })
 })
 
 app.get('/api/persons/:id', (request, response) => {
